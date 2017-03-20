@@ -1,7 +1,10 @@
 class UsersController < ApplicationController
+  before_action :set_user, only: [:show, :edit, :update]
+  before_action :correct_user, only: [:edit, :update]
   
   def show
     @user = User.find(params[:id])
+    @microposts = @user.microposts.order(created_at: :desc)
   end
   
   def new
@@ -19,27 +22,29 @@ class UsersController < ApplicationController
   end
   
   def edit
-    if  @user = User.find(params[:id])
-      　redirect_to root_path unless(current_user == @user)
-    else
-       render 'edit'
-    end
+  end
   
   def update
-    if @user.update_attributes(user_params)
-      redirect_to @user
+    if @user.update(user_params)
       flash[:success] = "Update your profile"
+      redirect_to @user
     else
-      render'edit'
-    end # ここにendが必要です。
-    
-# end # classをここで閉じてしまっていますので、これはいりません。
+      render 'edit'
+    end
+  end
   
   private
 
   def user_params
     params.require(:user).permit(:name, :email, :password,
-                                 :password_confirmation, :area, :profile)
+                                 :password_confirmation, :profile)
   end
-# end # このendはいりません。
+  
+  def correct_user
+    redirect_to root_path if @user != current_user
+  end
+  
+  def set_user
+    @user = User.find(params[:id])
+  end
 end
